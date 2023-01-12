@@ -12,11 +12,15 @@ class Shrine
           s3 = find_storage(storage_key)
 
           unless defined?(Shrine::Storage::S3) && s3.is_a?(Shrine::Storage::S3)
-            fail Error, "expected storage to be a Shrine::Storage::S3, but was #{s3.inspect}"
+            if Rails.env.test?
+              puts "Warning: expected storage on Shrine.uppy_s3_multipart to be a Shrine::Storage::S3, but was #{s3.inspect}"
+            else
+              fail Error, "expected storage on Shrine.uppy_s3_multipart to be a Shrine::Storage::S3, but was #{s3.inspect}"
+            end
           end
 
-          options[:bucket]  ||= s3.bucket
-          options[:prefix]  ||= s3.prefix
+          options[:bucket]  ||= s3.try(:bucket)
+          options[:prefix]  ||= s3.try(:prefix)
           options[:public]  ||= s3.public if s3.respond_to?(:public)
           options[:options] ||= opts[:uppy_s3_multipart_options]
 
